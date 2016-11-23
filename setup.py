@@ -25,7 +25,7 @@ def package_files(directory):
             paths.append(os.path.join('..', path, filename))
     return paths
 
-static_files = package_files('static')
+static_files = package_files('vlccast/static')
 
 setup(
     name='vlccast',
@@ -33,7 +33,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.0',
+    version='0.1.2',
 
     description='Watch videos using web interface using vlc',
     long_description=long_description,

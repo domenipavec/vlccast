@@ -276,7 +276,7 @@ function googleApiClientReady () {
 vlccast.service('googleApi', ['$q', '$window', '$location', '$rootScope', function ($q, $window, $location, $rootScope) {
     var deferred = $q.defer();
     var OAUTH2_CLIENT_ID = '1012703545383-lba1jaantig270js44vnlvmf1dc7nb76.apps.googleusercontent.com';
-    var OAUTH2_SCOPES = ['https://www.googleapis.com/auth/youtube'];
+    var OAUTH2_SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
 
     $window.initGapi = function () {
         gapi.auth.init(function () {

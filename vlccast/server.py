@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import atexit
-import os
 import socket
 import subprocess
 import time
@@ -9,10 +8,7 @@ import youtube_dl
 
 from flask import Flask, request, jsonify
 
-this_dir, this_filename = os.path.split(__file__)
-static_path = os.path.join(this_dir, '../static/')
-
-app = Flask(__name__, static_folder=static_path)
+app = Flask(__name__)
 
 vlc = None
 

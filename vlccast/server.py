@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import atexit
+import os
 import socket
 import subprocess
 import time
@@ -8,7 +9,10 @@ import youtube_dl
 
 from flask import Flask, request, jsonify
 
-app = Flask(__name__)
+this_dir, this_filename = os.path.split(__file__)
+static_path = os.path.join(this_dir, '../static/')
+
+app = Flask(__name__, static_folder=static_path)
 
 vlc = None
 
@@ -133,8 +137,12 @@ def index(p=None):
     return app.send_static_file('index.html')
 
 
-if __name__ == "__main__":
+def start():
     atexit.register(stop_vlc)
     start_vlc()
 
     app.run(host='0.0.0.0', port=5000)
+
+
+if __name__ == "__main__":
+    start()

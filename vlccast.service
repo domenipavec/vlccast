@@ -1,0 +1,12 @@
+[Unit]
+Description=Vlccast - Watch videos using web interface using vlc
+
+[Service]
+ExecStart=/usr/local/bin/vlccast
+Type=simple
+Restart=on-failure
+User=pi
+Environment="DISPLAY=:0.0"
+
+[Install]
+WantedBy=multi-user.target

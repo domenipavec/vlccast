@@ -210,9 +210,9 @@ vlccast.controller('YoutubeVideoController', ['$scope', 'youtubeService', '$rout
 }]);
 
 vlccast.controller('YoutubePlaylistController', ['$scope', 'youtubeService', '$routeParams', function ($scope, youtubeService, $routeParams) {
+    var videoPlaylistItemIdsMap = {};
     $scope.videos = {
         _length: 0,
-        _numLoaded: 0,
         _pages: {},
         _nextPageTokens: {},
         getItemAtIndex: function (index) {
@@ -244,6 +244,7 @@ vlccast.controller('YoutubePlaylistController', ['$scope', 'youtubeService', '$r
                 var ids = [];
                 angular.forEach(response.items, function(playlistItem) {
                     ids.push(playlistItem.snippet.resourceId.videoId);
+                    videoPlaylistItemIdsMap[playlistItem.snippet.resourceId.videoId] = playlistItem.id;
                 });
                 youtubeService.videosListById(ids, 'snippet,contentDetails').then(angular.bind(this, function (response) {
                     this._pages[pageNumber] = response.items;
@@ -263,6 +264,13 @@ vlccast.controller('YoutubePlaylistController', ['$scope', 'youtubeService', '$r
     }, function (error) {
         console.log(error);
     });
+    $scope.remove = function (video) {
+        youtubeService.playlistRemove(videoPlaylistItemIdsMap[video.id]).then(function () {
+            $scope.videos._length -= 1;
+            $scope.videos._pages = {};
+            $scope.videos._nextPageTokens = {};
+        });
+    };
 }]);
 
 vlccast.controller('GoogleAuthController', ['$scope', 'googleApi', function ($scope, googleApi) {
@@ -276,7 +284,7 @@ function googleApiClientReady () {
 vlccast.service('googleApi', ['$q', '$window', '$location', '$rootScope', function ($q, $window, $location, $rootScope) {
     var deferred = $q.defer();
     var OAUTH2_CLIENT_ID = '1012703545383-lba1jaantig270js44vnlvmf1dc7nb76.apps.googleusercontent.com';
-    var OAUTH2_SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
+    var OAUTH2_SCOPES = ['https://www.googleapis.com/auth/youtube'];
 
     $window.initGapi = function () {
         gapi.auth.init(function () {
@@ -364,6 +372,22 @@ vlccast.service('youtubeService', ['googleApi', '$q', function (googleApi, $q) {
 
         return deferred.promise;
     };
+
+    this.playlistRemove = function (playlistItemId) {
+        var deferred = $q.defer();
+
+        googleApi.get().then(function (gapi) {
+            gapi.client.youtube.playlistItems.delete({
+                id: playlistItemId,
+            }).execute(function (response) {
+                deferred.resolve(response.result);
+            });
+        }, function (error) {
+            deferred.reject(error);
+        });
+
+        return deferred.promise;
+    }
 
     this.playlistsListMy = function (part='snippet') {
         var deferred = $q.defer();

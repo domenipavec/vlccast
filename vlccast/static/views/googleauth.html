@@ -1,10 +1,13 @@
-<!-- Make sure all your bars are the first things in your <body> -->
-<header class="bar bar-nav">
-  <h1 class="title">Vlc cast</h1>
-</header>
+<md-toolbar>
+    <div class="md-toolbar-tools">
+        <h1>Vlc cast</h1>
+    </div>
+</md-toolbar>
 
-<!-- Wrap all non-bar HTML in the .content div (this is actually what scrolls) -->
-<div class="content content-padded">
+<md-content layout-padding>
     <p>You need to authorize with google to see your youtube videos.</p>
-    <button class="btn btn-block btn-primary btn-outlined" ng-click="authorize()">Authorize with google</button>
-</div>
+    <md-button class="md-raised md-primary" ng-click="authorize()">
+        <md-icon md-font-set="fa" md-font-icon="fa-google"></md-icon>
+        Authorize
+    </md-button>
+</md-content>

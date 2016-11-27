@@ -16,11 +16,15 @@ vlc = None
 def stop_vlc():
     if vlc is not None:
         vlc.terminate()
+        subprocess.call(["xset", "dpms", "force", "on"])
+        vlc = None
 
 
 def start_vlc():
     global vlc
-    vlc = subprocess.Popen(["vlc", "--qt-minimal-view", "--extraintf", "rc", "--rc-host", "localhost:9999"])
+    if vlc is None:
+        subprocess.call(["xset", "dpms", "force", "off"])
+        vlc = subprocess.Popen(["vlc", "--qt-minimal-view", "--extraintf", "rc", "--rc-host", "localhost:9999"])
 
 
 def get_connection():
@@ -49,7 +53,7 @@ def quick_command(cmd):
 def get_best_video(data):
     best = {'width': 0}
     for f in data['formats']:
-        if f['acodec'] != 'none':
+        if f['acodec'] != 'none' and f['vcodec'] != 'none':
             if f['width'] > best['width']:
                 best = f
     return best
@@ -57,6 +61,7 @@ def get_best_video(data):
 
 @app.route('/api/player/play', methods=['POST'])
 def play():
+    start_vlc()
     data = request.get_json()
 
     ydl = youtube_dl.YoutubeDL()
@@ -88,6 +93,7 @@ def pause():
 @app.route('/api/player/stop', methods=['POST'])
 def stop():
     quick_command('stop')
+    stop_vlc()
     return ('', 204)
 
 
@@ -135,7 +141,6 @@ def index(p=None):
 
 def start():
     atexit.register(stop_vlc)
-    start_vlc()
 
     app.run(host='0.0.0.0', port=5000)
 

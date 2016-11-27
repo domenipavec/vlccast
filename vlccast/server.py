@@ -14,6 +14,7 @@ vlc = None
 
 
 def stop_vlc():
+    global vlc
     if vlc is not None:
         vlc.terminate()
         subprocess.call(["xset", "dpms", "force", "on"])
@@ -24,7 +25,7 @@ def start_vlc():
     global vlc
     if vlc is None:
         subprocess.call(["xset", "dpms", "force", "off"])
-        vlc = subprocess.Popen(["vlc", "--qt-minimal-view", "--extraintf", "rc", "--rc-host", "localhost:9999"])
+        vlc = subprocess.Popen(["vlc", "--qt-minimal-view", "--no-video-title", "--extraintf", "rc", "--rc-host", "localhost:9999"])
 
 
 def get_connection():

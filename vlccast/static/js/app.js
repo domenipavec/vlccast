@@ -8,6 +8,11 @@ vlccast.config(['$routeProvider', '$locationProvider', function ($routeProvider,
         controller: 'YoutubeController',
     });
 
+    $routeProvider.when('/youtube/search', {
+        templateUrl: '/static/views/youtube/search.html',
+        controller: 'YoutubeSearchController',
+    });
+
     $routeProvider.when('/youtube/playlist/:playlist', {
         templateUrl: '/static/views/youtube/list.html',
         controller: 'YoutubePlaylistController',
@@ -126,6 +131,61 @@ vlccast.controller('YoutubeController', ['$scope', 'youtubeService', function ($
     }, function (error) {
         console.log(error);
     });
+}]);
+
+vlccast.controller('YoutubeSearchController', ['$scope', 'youtubeService', function ($scope, youtubeService) {
+    $scope.videos = {
+        _length: 0,
+        _pages: {},
+        _nextPageTokens: {},
+        _query: null,
+        getItemAtIndex: function (index) {
+            var pageNumber = Math.floor(index / MAX_VIDEOS);
+            var page = this._pages[pageNumber];
+            if (page) {
+                return page[index % MAX_VIDEOS];
+            } else if (page !== null) {
+                this._loadPage(pageNumber);
+            }
+        },
+        getLength: function () {
+            return this._length;
+        },
+        _loadPage: function (pageNumber) {
+            this._pages[pageNumber] = null;
+
+            var pageToken;
+            if (pageNumber != 0) {
+                var nextPageToken = this._nextPageTokens[pageNumber-1];
+                if (nextPageToken) {
+                    pageToken = nextPageToken;
+                } else {
+                    return;
+                }
+            }
+
+            youtubeService.videosSearch(this._query, pageToken).then(angular.bind(this, function (response) {
+                this._pages[pageNumber] = response.items;
+                this._nextPageTokens[pageNumber] = response.nextPageToken;
+            }), function (error) {
+                console.log(error);
+            });
+        },
+    };
+
+    $scope.search = function () {
+        $scope.videos._query = $scope.query;
+        $scope.videos._length = 0;
+        $scope.videos._nextPageTokens = {};
+        $scope.videos._pages = {};
+        youtubeService.videosSearch($scope.videos._query).then(function (response) {
+            $scope.videos._length = response.pageInfo.totalResults;
+            $scope.videos._pages[0] = response.items;
+            $scope.videos._nextPageTokens[0] = response.nextPageToken;
+        }, function (error) {
+            console.log(error);
+        });
+    };
 }]);
 
 vlccast.controller('YoutubeVideoController', ['$scope', 'youtubeService', '$routeParams', '$window', 'playerService', '$interval', '$timeout', function ($scope, youtubeService, $routeParams, $window, playerService, $interval, $timeout) {
@@ -461,6 +521,26 @@ vlccast.service('youtubeService', ['googleApi', '$q', function (googleApi, $q) {
 
         return deferred.promise;
     };
+
+    this.videosSearch = function(q, pageToken='') {
+        var deferred = $q.defer();
+
+        googleApi.get().then(function (gapi) {
+            gapi.client.youtube.search.list({
+                type: 'video',
+                q: q,
+                pageToken: pageToken,
+                maxResults: MAX_VIDEOS,
+                part: 'snippet',
+            }).execute(function (response) {
+                deferred.resolve(response.result);
+            });
+        }, function (error) {
+            deferred.reject(error);
+        });
+
+        return deferred.promise;
+    }
 
 
 }]);
